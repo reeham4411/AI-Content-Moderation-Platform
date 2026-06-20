@@ -25,7 +25,7 @@ export function Navbar() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white shadow-soft">
             <ShieldCheck className="h-5 w-5" />
           </span>
-          Sentinel
+          Muhafiz
         </Link>
 
         <div className="hidden md:flex items-center gap-8">

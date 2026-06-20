@@ -22,7 +22,7 @@ const jbMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sentinel — AI Content Moderation Platform",
+  title: "Muhafiz — AI Content Moderation Platform",
   description:
     "Automate image moderation, reduce manual review workload, and keep policy enforcement transparent.",
 };

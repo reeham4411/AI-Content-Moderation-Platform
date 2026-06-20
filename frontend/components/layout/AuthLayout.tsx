@@ -20,7 +20,7 @@ export function AuthLayout({
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white shadow-soft">
             <ShieldCheck className="h-5 w-5" />
           </span>
-          Sentinel
+          Muhafiz
         </Link>
 
         <div className="rounded-2xl border border-border bg-white/90 glass p-8 shadow-lifted">

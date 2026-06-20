@@ -11,7 +11,7 @@ export function Footer() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-white">
                 <ShieldCheck className="h-4.5 w-4.5" />
               </span>
-              Sentinel
+              Muhafiz
             </Link>
             <p className="mt-3 text-sm text-ink-muted max-w-xs">
               Automated image moderation for teams that need transparent, policy-driven enforcement.
@@ -46,7 +46,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-ink-faint">© {new Date().getFullYear()} Sentinel. Built for moderation teams.</p>
+          <p className="text-xs text-ink-faint">© {new Date().getFullYear()} Muhafiz. Built for moderation teams.</p>
           <p className="text-xs text-ink-faint">Every verdict is explainable, every policy change is auditable.</p>
         </div>
       </div>

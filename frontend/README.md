@@ -1,4 +1,4 @@
-# Sentinel — AI Content Moderation Platform (Frontend)
+# Muhafiz — AI Content Moderation Platform (Frontend)
 
 A premium, light-themed SaaS frontend for the AI Content Moderation Platform.
 Built with Next.js App Router, TypeScript, Tailwind CSS, and Radix-based UI

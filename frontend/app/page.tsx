@@ -31,15 +31,15 @@ export default function LandingPage() {
         <AmbientBlobs />
         <div className="container relative py-24 sm:py-32">
           <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-1.5 text-xs font-semibold text-teal-700">
+            {/* <span className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-1.5 text-xs font-semibold text-teal-700">
               <ShieldCheck className="h-3.5 w-3.5" />
               Policy-driven image moderation
-            </span>
+            </span> */}
             <h1 className="mt-6 font-display text-4xl font-bold tracking-tight text-ink text-balance sm:text-6xl">
               Moderation decisions your team can actually <span className="text-teal-600">explain</span>.
             </h1>
             <p className="mt-6 text-lg text-ink-muted text-balance max-w-2xl mx-auto">
-              Sentinel automates image moderation, reduces manual review workload, and keeps every
+              Muhafiz automates image moderation, reduces manual review workload, and keeps every
               policy decision transparent — from the confidence score to the appeal outcome.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
