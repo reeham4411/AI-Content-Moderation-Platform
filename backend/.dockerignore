@@ -5,6 +5,6 @@ npm-debug.log
 .git
 .gitignore
 uploads
-src/uploads
-*.md
+src/uploads/*
+!src/uploads/.gitkeep
 .DS_Store
