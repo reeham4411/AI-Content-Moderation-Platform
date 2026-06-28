@@ -1,4 +1,8 @@
-import { ModerationCategory, ProviderModerationResult } from "../types";
+import {
+  ModerationCategoryKey,
+  ProviderModerationResult,
+  PolicyCategorySnapshot,
+} from "../types";
 
 // Any moderation provider (Gemini, Mock, Groq, AWS Rekognition, etc) must implement this.
 // This is the seam that allows swapping AI backends without touching business logic.
@@ -13,6 +17,7 @@ export interface IModerationProvider {
   moderateImage(
     imageBuffer: Buffer,
     mimeType: string,
-    categories: ModerationCategory[]
+    categories: ModerationCategoryKey[],
+    policyDetails?: PolicyCategorySnapshot[]
   ): Promise<ProviderModerationResult>;
 }

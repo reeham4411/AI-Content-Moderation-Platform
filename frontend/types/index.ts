@@ -1,4 +1,4 @@
-// Types mirror the backend exactly — see backend src/types/index.ts and models/
+
 
 export type UserRole = "USER" | "ADMIN";
 
@@ -6,13 +6,16 @@ export type Verdict = "APPROVED" | "FLAGGED" | "BLOCKED";
 
 export type EnforcementBehavior = "AUTO_BLOCK" | "FLAG_FOR_REVIEW";
 
-export type ModerationCategory =
+export type DefaultModerationCategory =
   | "GRAPHIC_VIOLENCE"
   | "HATE_SYMBOLS"
   | "SELF_HARM"
   | "EXTREMIST_PROPAGANDA"
   | "WEAPONS_CONTRABAND"
   | "HARASSMENT_HUMILIATION";
+
+// Allows both default categories and admin-created custom policies
+export type ModerationCategory = DefaultModerationCategory | string;
 
 export type AppealStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 
@@ -31,6 +34,9 @@ export interface AuthResponse {
 
 export interface PolicyCategorySnapshot {
   category: ModerationCategory;
+  displayName?: string;
+  description?: string;
+  isCustom?: boolean;
   enabled: boolean;
   confidenceThreshold: number;
   enforcementBehavior: EnforcementBehavior;
@@ -40,6 +46,14 @@ export interface Policy extends PolicyCategorySnapshot {
   _id: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreatePolicyInput {
+  displayName: string;
+  description: string;
+  enabled: boolean;
+  confidenceThreshold: number;
+  enforcementBehavior: EnforcementBehavior;
 }
 
 export interface CategoryBreakdown {
@@ -122,8 +136,7 @@ export interface ApiError {
   message: string;
 }
 
-// Human-readable labels for moderation categories — used across badges/cards
-export const CATEGORY_LABELS: Record<ModerationCategory, string> = {
+export const CATEGORY_LABELS: Record<DefaultModerationCategory, string> = {
   GRAPHIC_VIOLENCE: "Graphic Violence",
   HATE_SYMBOLS: "Hate Symbols",
   SELF_HARM: "Self-Harm",
@@ -132,7 +145,20 @@ export const CATEGORY_LABELS: Record<ModerationCategory, string> = {
   HARASSMENT_HUMILIATION: "Harassment & Humiliation",
 };
 
-export const ALL_CATEGORIES: ModerationCategory[] = [
+export function getCategoryLabel(category: ModerationCategory, displayName?: string) {
+  if (displayName) return displayName;
+
+  const knownLabel = CATEGORY_LABELS[category as DefaultModerationCategory];
+  if (knownLabel) return knownLabel;
+
+  return category
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+export const ALL_CATEGORIES: DefaultModerationCategory[] = [
   "GRAPHIC_VIOLENCE",
   "HATE_SYMBOLS",
   "SELF_HARM",

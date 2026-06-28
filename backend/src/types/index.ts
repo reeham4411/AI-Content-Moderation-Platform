@@ -25,37 +25,39 @@ export enum ModerationCategory {
   HARASSMENT_HUMILIATION = "HARASSMENT_HUMILIATION",
 }
 
+// This keeps existing enum categories but also allows admin-created custom categories.
+export type ModerationCategoryKey = ModerationCategory | string;
+
 export enum AppealStatus {
   PENDING = "PENDING",
   ACCEPTED = "ACCEPTED",
   REJECTED = "REJECTED",
 }
 
-// Result returned by any moderation provider for a single category check
 export interface CategoryProviderResult {
-  category: ModerationCategory;
+  category: ModerationCategoryKey;
   violationDetected: boolean;
-  confidenceScore: number; // 0 - 1
+  confidenceScore: number;
   reasoning: string;
 }
 
-// Full provider response for one image, one result per enabled category
 export interface ProviderModerationResult {
   results: CategoryProviderResult[];
   provider: string;
 }
 
-// Policy snapshot embedded into a verdict at moderation time
 export interface PolicyCategorySnapshot {
-  category: ModerationCategory;
+  category: ModerationCategoryKey;
+  displayName?: string;
+  description?: string;
+  isCustom?: boolean;
   enabled: boolean;
   confidenceThreshold: number;
   enforcementBehavior: EnforcementBehavior;
 }
 
-// Per-category breakdown stored on each moderated image
 export interface CategoryBreakdown {
-  category: ModerationCategory;
+  category: ModerationCategoryKey;
   violationDetected: boolean;
   confidenceScore: number;
   reasoning: string;

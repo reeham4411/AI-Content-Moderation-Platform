@@ -41,10 +41,11 @@ export async function moderateImage(
 
   if (enabledCategories.length > 0) {
     providerResult = await provider.moderateImage(
-      imageBuffer,
-      mimeType,
-      enabledCategories
-    );
+  imageBuffer,
+  mimeType,
+  enabledCategories,
+  enabledPolicies
+);
   }
 
   const policyByCategory = new Map(enabledPolicies.map((p) => [p.category, p]));

@@ -1,9 +1,12 @@
 import { Schema, model, Document, Types } from "mongoose";
-import { ModerationCategory, EnforcementBehavior } from "../types";
+import { EnforcementBehavior, ModerationCategoryKey } from "../types";
 
 export interface IPolicy extends Document {
   _id: Types.ObjectId;
-  category: ModerationCategory;
+  category: ModerationCategoryKey;
+  displayName?: string;
+  description?: string;
+  isCustom: boolean;
   enabled: boolean;
   confidenceThreshold: number;
   enforcementBehavior: EnforcementBehavior;
@@ -15,11 +18,27 @@ const policySchema = new Schema<IPolicy>(
   {
     category: {
       type: String,
-      enum: Object.values(ModerationCategory),
       required: true,
       unique: true,
+      uppercase: true,
+      trim: true,
     },
-    enabled: { type: Boolean, default: true },
+    displayName: {
+      type: String,
+      trim: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+    isCustom: {
+      type: Boolean,
+      default: false,
+    },
+    enabled: {
+      type: Boolean,
+      default: true,
+    },
     confidenceThreshold: {
       type: Number,
       required: true,

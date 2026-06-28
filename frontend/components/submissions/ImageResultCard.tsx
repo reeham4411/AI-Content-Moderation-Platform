@@ -138,7 +138,10 @@ export function ImageResultCard({
 
       {expanded && (
         <div className="border-t border-border bg-surface-muted/40 p-5 animate-fade-in">
-          <CategoryBreakdownList breakdown={image.categoryBreakdown} />
+          <CategoryBreakdownList
+            breakdown={image.categoryBreakdown}
+            policySnapshot={image.policySnapshot}
+          />
         </div>
       )}
     </div>

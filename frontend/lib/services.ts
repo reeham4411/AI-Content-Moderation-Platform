@@ -3,6 +3,7 @@ import {
   AuthResponse,
   User,
   Policy,
+  CreatePolicyInput,
   Submission,
   Pagination,
   Appeal,
@@ -42,7 +43,14 @@ export async function getPolicies() {
   const res = await apiClient.get<{ success: true; data: { policies: Policy[] } }>("/api/policies");
   return res.data.data.policies;
 }
+export async function createPolicy(payload: CreatePolicyInput) {
+  const res = await apiClient.post<{ success: true; data: { policy: Policy } }>(
+    "/api/admin/policies",
+    payload
+  );
 
+  return res.data.data.policy;
+}
 export async function updatePolicy(
   policyId: string,
   payload: Partial<Pick<Policy, "enabled" | "confidenceThreshold" | "enforcementBehavior">>

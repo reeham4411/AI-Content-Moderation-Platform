@@ -17,6 +17,7 @@ import {
   createAppeal,
   deleteSubmission,
   deleteSubmissionImage,
+  getMyAppeals,
 } from "@/lib/services";
 import { getErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -62,17 +63,20 @@ function SubmissionDetailContent() {
     try {
       const sub = await getSubmissionById(id);
       setSubmission(sub);
+
+      const appeals = await getMyAppeals();
+
+      const appealedImageIds = appeals
+        .filter((appeal) => appeal.submission === id)
+        .map((appeal) => appeal.imageId);
+
+      setAppealedIds(new Set(appealedImageIds));
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   }, [id]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
   const handleDeleteSubmission = async () => {
     if (!submission) return;
 
