@@ -63,7 +63,14 @@ function SubmissionDetailContent() {
     try {
       const sub = await getSubmissionById(id);
       setSubmission(sub);
-
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+  const loadAppeals = useCallback(async () => {
+    try {
       const appeals = await getMyAppeals();
 
       const appealedImageIds = appeals
@@ -72,11 +79,18 @@ function SubmissionDetailContent() {
 
       setAppealedIds(new Set(appealedImageIds));
     } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
+      console.error("Failed to load appeals", err);
     }
   }, [id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    loadAppeals();
+  }, [loadAppeals]);
+
   const handleDeleteSubmission = async () => {
     if (!submission) return;
 

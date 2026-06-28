@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import fs from "fs/promises";
 import { Submission } from "../models/Submission";
+import { Appeal } from "../models/Appeal";
 import { asyncHandler } from "../utils/asyncHandler";
 import { BadRequestError, NotFoundError, ForbiddenError } from "../utils/errors";
 import { moderateImage } from "../services/moderationService";
@@ -48,6 +49,7 @@ export const getMySubmissions = asyncHandler(async (req: Request, res: Response)
 
   if (from || to) {
     match.createdAt = {};
+
     if (from) match.createdAt.$gte = new Date(from as string);
     if (to) match.createdAt.$lte = new Date(to as string);
   }
@@ -55,8 +57,6 @@ export const getMySubmissions = asyncHandler(async (req: Request, res: Response)
   const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
   const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10) || 20));
 
-  // Filtering by outcome/category happens at image level, so we filter in-memory
-  // after fetching the user's submissions (acceptable for assignment-scale data).
   let submissions = await Submission.find(match).sort({ createdAt: -1 });
 
   if (outcome && Object.values(Verdict).includes(outcome as Verdict)) {
@@ -76,6 +76,7 @@ export const getMySubmissions = asyncHandler(async (req: Request, res: Response)
             (c: any) => c.category === category && c.contributedToVerdict === true
           )
         );
+
         return { ...(s.toObject ? s.toObject() : s), images: filteredImages };
       })
       .filter((s: any) => s.images.length > 0) as any;
@@ -88,13 +89,19 @@ export const getMySubmissions = asyncHandler(async (req: Request, res: Response)
     success: true,
     data: {
       submissions: paginated,
-      pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) },
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(total / limitNum),
+      },
     },
   });
 });
 
 export const getSubmissionById = asyncHandler(async (req: Request, res: Response) => {
   const submission = await Submission.findById(req.params.id);
+
   if (!submission) {
     throw new NotFoundError("Submission not found");
   }
@@ -108,6 +115,7 @@ export const getSubmissionById = asyncHandler(async (req: Request, res: Response
 
   res.json({ success: true, data: { submission } });
 });
+
 export const deleteSubmission = asyncHandler(async (req: Request, res: Response) => {
   const submission = await Submission.findById(req.params.id);
 
@@ -136,6 +144,10 @@ export const deleteSubmission = asyncHandler(async (req: Request, res: Response)
     }
   }
 
+  // Delete all appeals linked to this submission
+  await Appeal.deleteMany({ submission: submission._id });
+
+  // Delete submission document
   await Submission.findByIdAndDelete(req.params.id);
 
   res.json({
@@ -143,6 +155,7 @@ export const deleteSubmission = asyncHandler(async (req: Request, res: Response)
     message: "Submission deleted successfully",
   });
 });
+
 export const deleteSubmissionImage = asyncHandler(async (req: Request, res: Response) => {
   const { id, imageId } = req.params;
 
@@ -175,9 +188,18 @@ export const deleteSubmissionImage = asyncHandler(async (req: Request, res: Resp
     }
   }
 
+  // Delete appeals linked only to this image
+  await Appeal.deleteMany({
+    submission: submission._id,
+    imageId,
+  });
+
   submission.images.pull(imageId);
 
   if (submission.images.length === 0) {
+    // Safety cleanup: if this was the last image, remove any remaining appeals for this submission
+    await Appeal.deleteMany({ submission: submission._id });
+
     await Submission.findByIdAndDelete(id);
 
     return res.json({
