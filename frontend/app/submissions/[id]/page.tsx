@@ -12,17 +12,20 @@ import { ErrorState, Alert } from "@/components/ui/ErrorState";
 import { ImageResultCard } from "@/components/submissions/ImageResultCard";
 import { FileAppealModal } from "@/components/upload/FileAppealModal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { OverrideModal } from "@/components/admin/AdminActionModal";
+import { useAuth } from "@/lib/auth";
 import {
   getSubmissionById,
   createAppeal,
   deleteSubmission,
   deleteSubmissionImage,
   getMyAppeals,
+  overrideSubmission,
 } from "@/lib/services";
 import { getErrorMessage } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { downloadSubmissionReport } from "@/lib/report";
-import { Submission, ModeratedImage } from "@/types";
+import { Submission, ModeratedImage, Verdict } from "@/types";
 
 export default function SubmissionDetailPage() {
   return (
@@ -38,6 +41,9 @@ function SubmissionDetailContent() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
 
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +62,11 @@ function SubmissionDetailContent() {
   const [appealModalOpen, setAppealModalOpen] = useState(false);
   const [appealedIds, setAppealedIds] = useState<Set<string>>(new Set());
 
+  const [overrideTarget, setOverrideTarget] = useState<ModeratedImage | null>(
+    null,
+  );
+  const [overrideModalOpen, setOverrideModalOpen] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -69,7 +80,10 @@ function SubmissionDetailContent() {
       setLoading(false);
     }
   }, [id]);
+
   const loadAppeals = useCallback(async () => {
+    if (isAdmin) return;
+
     try {
       const appeals = await getMyAppeals();
 
@@ -81,7 +95,7 @@ function SubmissionDetailContent() {
     } catch (err) {
       console.error("Failed to load appeals", err);
     }
-  }, [id]);
+  }, [id, isAdmin]);
 
   useEffect(() => {
     load();
@@ -166,6 +180,26 @@ function SubmissionDetailContent() {
     setTimeout(() => setSuccessMsg(null), 5000);
   };
 
+  const handleOverrideSubmit = async (verdict: Verdict, reason: string) => {
+    if (!submission || !overrideTarget) return;
+
+    const updatedSubmission = await overrideSubmission(
+      submission._id,
+      overrideTarget._id,
+      verdict,
+      reason,
+    );
+
+    setSubmission(updatedSubmission);
+    setSuccessMsg(
+      `Verdict updated to ${verdict} for "${overrideTarget.fileName}".`,
+    );
+    setTimeout(() => setSuccessMsg(null), 4000);
+
+    setOverrideModalOpen(false);
+    setOverrideTarget(null);
+  };
+
   if (loading) return <LoadingState label="Loading submission…" />;
   if (error) return <ErrorState description={error} onRetry={load} />;
   if (!submission) return null;
@@ -173,11 +207,13 @@ function SubmissionDetailContent() {
   return (
     <div>
       <button
-        onClick={() => router.push("/submissions")}
+        onClick={() =>
+          router.push(isAdmin ? "/admin/submissions" : "/submissions")
+        }
         className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 rounded px-1"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to submission history
+        {isAdmin ? "Back to all submissions" : "Back to submission history"}
       </button>
 
       <PageHeader
@@ -195,14 +231,16 @@ function SubmissionDetailContent() {
               Download report
             </Button>
 
-            <Button
-              variant="outlineDanger"
-              onClick={() => setDeleteSubmissionModalOpen(true)}
-              disabled={deleting}
-            >
-              <Trash2 className="h-4 w-4" />
-              {deleting ? "Deleting..." : "Delete submission"}
-            </Button>
+            {!isAdmin && (
+              <Button
+                variant="outlineDanger"
+                onClick={() => setDeleteSubmissionModalOpen(true)}
+                disabled={deleting}
+              >
+                <Trash2 className="h-4 w-4" />
+                {deleting ? "Deleting..." : "Delete submission"}
+              </Button>
+            )}
           </div>
         }
       />
@@ -218,12 +256,20 @@ function SubmissionDetailContent() {
           <ImageResultCard
             key={image._id}
             image={image}
-            onAppeal={() => handleAppealRequest(image)}
+            onAppeal={!isAdmin ? () => handleAppealRequest(image) : undefined}
             appealDisabled={appealedIds.has(image._id)}
             appealLabel={
-              appealedIds.has(image._id) ? "Appeal submitted" : "File appeal"
+              appealedIds.has(image._id) ? "Appeal pending" : "File appeal"
             }
-            onDelete={() => setImageDeleteTarget(image)}
+            onOverride={
+              isAdmin
+                ? () => {
+                    setOverrideTarget(image);
+                    setOverrideModalOpen(true);
+                  }
+                : undefined
+            }
+           onDelete={!isAdmin ? () => setImageDeleteTarget(image) : undefined}
             deleting={deletingImageId === image._id}
           />
         ))}
@@ -268,6 +314,13 @@ function SubmissionDetailContent() {
         onOpenChange={setAppealModalOpen}
         image={appealTarget}
         onSubmit={handleAppealSubmit}
+      />
+
+      <OverrideModal
+        open={overrideModalOpen}
+        onOpenChange={setOverrideModalOpen}
+        image={overrideTarget}
+        onSubmit={handleOverrideSubmit}
       />
     </div>
   );

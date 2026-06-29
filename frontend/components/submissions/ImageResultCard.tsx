@@ -24,6 +24,7 @@ export function ImageResultCard({
   appealLabel = "File appeal",
   onDelete,
   deleting = false,
+  onOverride,
 }: {
   image: ModeratedImage;
   onAppeal?: () => void;
@@ -31,6 +32,7 @@ export function ImageResultCard({
   appealLabel?: string;
   onDelete?: () => void;
   deleting?: boolean;
+  onOverride?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -57,11 +59,11 @@ export function ImageResultCard({
           )}
         </div>
 
-        <div className="flex-1 min-w-0 p-5">
+        <div className="min-w-0 flex-1 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate font-medium text-ink">{image.fileName}</p>
-              <p className="text-xs text-ink-faint mt-0.5">
+              <p className="mt-0.5 text-xs text-ink-faint">
                 {formatFileSize(image.sizeBytes)}
               </p>
             </div>
@@ -89,7 +91,7 @@ export function ImageResultCard({
           </div>
 
           {image.overridden && image.overrideReason && (
-            <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 border border-amber-100">
+            <p className="mt-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-800">
               {image.overrideReason}
             </p>
           )}
@@ -99,13 +101,13 @@ export function ImageResultCard({
               type="button"
               onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-teal-700 hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 rounded-lg px-1 -mx-1"
+              className="inline-flex items-center gap-1.5 rounded-lg px-1 -mx-1 text-sm font-medium text-teal-700 hover:text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
             >
               {expanded ? "Hide" : "View"} category breakdown
               <ChevronDown
                 className={cn(
                   "h-4 w-4 transition-transform",
-                  expanded && "rotate-180",
+                  expanded && "rotate-180"
                 )}
               />
             </button>
@@ -118,6 +120,13 @@ export function ImageResultCard({
                 disabled={appealDisabled}
               >
                 {appealLabel}
+              </Button>
+            )}
+
+            {onOverride && (
+              <Button size="sm" variant="secondary" onClick={onOverride}>
+                <RotateCcw className="h-4 w-4" />
+                Override
               </Button>
             )}
 
@@ -137,7 +146,7 @@ export function ImageResultCard({
       </div>
 
       {expanded && (
-        <div className="border-t border-border bg-surface-muted/40 p-5 animate-fade-in">
+        <div className="animate-fade-in border-t border-border bg-surface-muted/40 p-5">
           <CategoryBreakdownList
             breakdown={image.categoryBreakdown}
             policySnapshot={image.policySnapshot}
